@@ -25,14 +25,6 @@
 static ssize_t mp_user_getxattr(FsContext *ctx, const char *path,
                                 const char *name, void *value, size_t size)
 {
-    if (strncmp(name, "user.virtfs.", 12) == 0) {
-        /*
-         * Don't allow fetch of user.virtfs namesapce
-         * in case of mapped security
-         */
-        errno = ENOATTR;
-        return -1;
-    }
     return local_getxattr_nofollow(ctx, path, name, value, size);
 }
 
@@ -40,21 +32,6 @@ static ssize_t mp_user_listxattr(FsContext *ctx, const char *path,
                                  char *name, void *value, size_t size)
 {
     int name_size = strlen(name) + 1;
-    if (strncmp(name, "user.virtfs.", 12) == 0) {
-
-        /*  check if it is a mapped posix acl */
-        if (strncmp(name, "user.virtfs.system.posix_acl_", 29) == 0) {
-            /* adjust the name and size */
-            name += 12;
-            name_size -= 12;
-        } else {
-            /*
-             * Don't allow fetch of user.virtfs namesapce
-             * in case of mapped security
-             */
-            return 0;
-        }
-    }
     if (!value) {
         return name_size;
     }
@@ -72,28 +49,12 @@ static ssize_t mp_user_listxattr(FsContext *ctx, const char *path,
 static int mp_user_setxattr(FsContext *ctx, const char *path, const char *name,
                             void *value, size_t size, int flags)
 {
-    if (strncmp(name, "user.virtfs.", 12) == 0) {
-        /*
-         * Don't allow fetch of user.virtfs namesapce
-         * in case of mapped security
-         */
-        errno = EACCES;
-        return -1;
-    }
     return local_setxattr_nofollow(ctx, path, name, value, size, flags);
 }
 
 static int mp_user_removexattr(FsContext *ctx,
                                const char *path, const char *name)
 {
-    if (strncmp(name, "user.virtfs.", 12) == 0) {
-        /*
-         * Don't allow fetch of user.virtfs namesapce
-         * in case of mapped security
-         */
-        errno = EACCES;
-        return -1;
-    }
     return local_removexattr_nofollow(ctx, path, name);
 }
 
